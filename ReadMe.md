@@ -1,4 +1,4 @@
-ImageConvolution application performs convolve operator on give image.
+ImageConvolution application performs convolve operator on a given image.
 
 Qt is used to design the front end of the application.
 
