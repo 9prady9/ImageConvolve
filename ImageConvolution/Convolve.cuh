@@ -53,7 +53,6 @@ private:
 	bool	mIsKernelSet;
 	bool	mIsImageSet;
 	bool	mIsCUDAInit;
-	bool	mIsComputeDone;
 	dim3	mThreadsPerBlock;
 	//dim3	mPerThreadLoad;
 	dim3	mGrid;

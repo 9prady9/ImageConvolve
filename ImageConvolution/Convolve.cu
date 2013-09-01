@@ -49,10 +49,10 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	int gidx		= linearIdx+1;
 	int bidx		= linearIdx;
 	int aidx		= linearIdx+3;
-	fDestination[ridx] = fSource[ridx];
-	fDestination[gidx] = fSource[gidx];
-	fDestination[bidx] = fSource[bidx];
-	fDestination[aidx] = fSource[aidx];
+	fDestination[ridx] = 0; //fSource[ridx];
+	fDestination[gidx] = 0; //fSource[gidx];
+	fDestination[bidx] = gx; //fSource[bidx];
+	fDestination[aidx] = gy; //fSource[aidx];
 }
 
 Convolve::Convolve()
@@ -62,7 +62,6 @@ Convolve::Convolve()
 	mIsKernelSet		= false;
 	mIsImageSet			= false;
 	mIsCUDAInit			= false;
-	mIsComputeDone		= false;
 	dev_SourceImage		= 0;
 	dev_ConvolvedImage	= 0;
 	host_ConvolvedImage = 0;
@@ -117,9 +116,8 @@ void Convolve::cudaConvolve()
 		qDebug()<<"computation time on device: "<<computeTime<<" ms\n";
 		/* Copy back convolved image to host and show it */		
 		HANDLE_ERROR( cudaMemcpy( host_ConvolvedImage, dev_ConvolvedImage, mImageWidth*mImageHeight*4*sizeof(uchar), cudaMemcpyDeviceToHost) );
-		QImage output(host_ConvolvedImage,mImageWidth,mImageHeight,QImage::Format_ARGB32);
+		QImage output(host_ConvolvedImage,mImageWidth,mImageHeight, QImage::Format_ARGB32);
 		output.save("C:\\Users\\prady\\Downloads\\output.png");
-		mIsComputeDone = true;
 	} else {
 		if(!mIsKernelSet)
 			printf("Prerequisite: Kernel not setup. \n");
