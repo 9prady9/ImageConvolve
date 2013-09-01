@@ -21,7 +21,6 @@ public:
 
 public slots:
 	void loadImage();
-	void sendImage();
 	void increaseKernelSize();
 	void decreaseKernelSize();
 	void saveKernel();
@@ -35,7 +34,8 @@ private:
 	Ui::ImageConvolutionClass ui;
 	Ui::Form		kernelUi;
 	QWidget*		kernelFormWidget;
-	QImage*			mImageHandle;
+	int				mImageWidth;
+	int				mImageHeight;
 	QLabel*			mImageViewer;
 	QScrollArea*	mScrollArea;
 	unsigned int	mKernelRadius;

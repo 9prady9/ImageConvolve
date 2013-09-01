@@ -36,7 +36,6 @@
      <string>Convolve</string>
     </property>
     <addaction name="actionSet_Kernel"/>
-    <addaction name="actionSend_Image_Data"/>
     <addaction name="actionApply_Kernel"/>
    </widget>
    <addaction name="menuFile"/>

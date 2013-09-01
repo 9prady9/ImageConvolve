@@ -25,7 +25,6 @@ ImageConvolution::ImageConvolution(QWidget *parent, Qt::WFlags flags)
     mScrollArea->setWidget(mImageViewer);
     setCentralWidget(mScrollArea);
 	connect( ui.actionOpen, SIGNAL(triggered()),this,SLOT(loadImage()) );
-	connect( ui.actionSend_Image_Data, SIGNAL(triggered()),this,SLOT(sendImage()) );
 	connect( ui.actionSet_Kernel, SIGNAL(triggered()), kernelFormWidget, SLOT(show()) );
 	connect( kernelUi.increaseKernelSizeButton, SIGNAL(clicked()), this, SLOT(increaseKernelSize()) );
 	connect( kernelUi.decreaseKernelSizeButton, SIGNAL(clicked()), this, SLOT(decreaseKernelSize()) );
@@ -34,33 +33,25 @@ ImageConvolution::ImageConvolution(QWidget *parent, Qt::WFlags flags)
 	connect( ui.actionApply_Kernel, SIGNAL(triggered()), this, SLOT(applyKernel()) );
 }
 
-ImageConvolution::~ImageConvolution()
-{
-}
+ImageConvolution::~ImageConvolution() { }
 
 void ImageConvolution::loadImage()
 {
 	QString fileName = QFileDialog::getOpenFileName(this,tr("Open Image"),"",tr("*.png *.jpg *.bmp"));
 	if(!fileName.isEmpty())
 	{
-		mImageHandle = new QImage(fileName);
-        if (mImageHandle->isNull()) {
+		QImage mImageHandle(fileName);
+        if (mImageHandle.isNull()) {
 			QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
             return;
         }
-		mImageViewer->setPixmap(QPixmap::fromImage(*mImageHandle));
+		mImageWidth = mImageHandle.width();
+		mImageHeight= mImageHandle.height();
+		mImageViewer->setPixmap(QPixmap::fromImage(mImageHandle));
 		mImageViewer->adjustSize();
 		update();
-	}
-}
-
-void ImageConvolution::sendImage()
-{
-	if(!mImageHandle->isNull()) {
-		QImage ARGB_Img( mImageHandle->bits(), mImageHandle->width(), mImageHandle->height(), QImage::Format_ARGB32);
+		QImage ARGB_Img( mImageHandle.bits(), mImageWidth, mImageHeight, QImage::Format_ARGB32);
 		mConvolver.setImageData(ARGB_Img.bits(),ARGB_Img.width(),ARGB_Img.height());
-	} else {
-		QMessageBox::information(this, tr("Image Viewer"), tr("No image loaded yet."));
 	}
 }
 
@@ -136,13 +127,12 @@ void ImageConvolution::saveKernel()
 
 void ImageConvolution::applyKernel()
 {
-	// TODO here it is where we shall call CUDA code
 	if(mHaveKernel) {
 		mConvolver.cudaConvolve();
-		/*QImage output(mConvolver.getConvolvedImage(),mImageHandle->width(),mImageHandle->height(), QImage::Format_ARGB32);
+		QImage output(mConvolver.getConvolvedImage(),mImageWidth,mImageHeight, QImage::Format_ARGB32);
 		mImageViewer->setPixmap(QPixmap::fromImage(output));
 		mImageViewer->adjustSize();
-		update();*/
+		update();
 	}else {
 		QMessageBox::information(this, tr("Image Viewer"), tr("Kernel not set"));
 	}
@@ -152,3 +142,4 @@ bool ImageConvolution::validateKernel()
 {
 	return true;
 }
+

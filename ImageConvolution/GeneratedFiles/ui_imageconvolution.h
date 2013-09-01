@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imageconvolution.ui'
 **
-** Created: Tue May 14 22:12:17 2013
+** Created: Sat Aug 31 20:15:09 2013
 **      by: Qt User Interface Compiler version 4.8.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -81,7 +81,6 @@ public:
         menuFile->addAction(actionSave);
         menuFile->addAction(actionExit);
         menuConvolve->addAction(actionSet_Kernel);
-        menuConvolve->addAction(actionSend_Image_Data);
         menuConvolve->addAction(actionApply_Kernel);
 
         retranslateUi(ImageConvolutionClass);

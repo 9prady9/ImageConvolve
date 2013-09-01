@@ -15,6 +15,9 @@ static void HandleError( cudaError_t err, const char *file, int line )
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 typedef unsigned char uchar;
 
+const int TILE_WIDTH = 32;
+const int TILE_HEIGHT = 32;
+
 int ceil(int numer, int denom);
 
 struct Kernel
@@ -26,7 +29,7 @@ struct Kernel
 	void setCellValue(int fRow, int fCol, int fValue);
 };
 
-__global__ void convolveKernel(uchar* fCanvas, int fCanvasWidth, int fCanvasHeight, uchar* dev_fConvolvedImage, int fImgWidth, int fImgHeight, int fKernelSize, dim3 fMyLoad );
+__global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImageHeight, uchar* fDestination, int fKernelSize);
 
 class Convolve
 {
@@ -35,26 +38,27 @@ public:
 	void setKernelData(const Kernel &fKernel);
 	void setImageData(const uchar* fImageData, int fImageWidth, int fImageHeight);
 	uchar* getConvolvedImage();
-	void initCUDA();
 	void cudaConvolve();
-	void destroyCUDA();
 	~Convolve();
 	/* Public Atrribute to enable saving of output outside the class */
 	uchar*	host_ConvolvedImage;
 
 private:
+	/* Helper methods */
+	void initCUDA();
+	void cleanMemory();
+	void destroyCUDA();
+
+	/* Attributes */
 	bool	mIsKernelSet;
 	bool	mIsImageSet;
 	bool	mIsCUDAInit;
 	bool	mIsComputeDone;
 	dim3	mThreadsPerBlock;
-	dim3	mPerThreadLoad;
+	//dim3	mPerThreadLoad;
 	dim3	mGrid;
-	uchar*	host_ARGB_channel;
 	int		mImageWidth;
 	int		mImageHeight;
-	int		mCanvasWidth;
-	int		mCanvasHeight;
 
 	cudaEvent_t		mStart, mStop;
 };
