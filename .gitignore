@@ -9,6 +9,7 @@
 # Build results
 bin32/
 CompilationTemps/
+GeneratedFiles/
 [Dd]ebug/
 [Rr]elease/
 x64/
