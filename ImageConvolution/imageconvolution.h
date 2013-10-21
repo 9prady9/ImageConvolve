@@ -1,12 +1,12 @@
 #ifndef IMAGECONVOLUTION_H
 #define IMAGECONVOLUTION_H
 
-#include <QtGui/QMainWindow>
-#include "ui_imageconvolution.h"
+#include "Canvas.h"
 #include "ui_kernel.h"
-#include <qscrollarea.h>
-#include <qlabel.h>
 #include "Convolve.cuh"
+#include "ui_imageconvolution.h"
+
+#include <QtGui/QMainWindow>
 
 const unsigned int KERNEL_MAX_SIZE = 4;
 const unsigned int KERNEL_MIN_SIZE = 1;
@@ -33,11 +33,12 @@ private:
 	/* Attributes */
 	Ui::ImageConvolutionClass ui;
 	Ui::Form		kernelUi;
+
 	QWidget*		kernelFormWidget;
+	Canvas*			mRenderArea;
+
 	int				mImageWidth;
 	int				mImageHeight;
-	QLabel*			mImageViewer;
-	QScrollArea*	mScrollArea;
 	unsigned int	mKernelRadius;
 	bool			mHaveKernel;
 	Kernel			mKernel;

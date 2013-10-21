@@ -9,21 +9,19 @@ ImageConvolution::ImageConvolution(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
 {
 	ui.setupUi(this);
+	// setup default kernel and form attributes
 	mHaveKernel		= false;
 	mKernelRadius	= 1;
 	mKernel.setKernelRadius(mKernelRadius);
 	kernelFormWidget= new QWidget;
 	kernelUi.setupUi(kernelFormWidget);
+	// setup window title and minimum size
 	setWindowTitle(tr("Image Convolution Viewer"));
 	setMinimumSize(160,120);
-	mImageViewer	= new QLabel;	
-	mScrollArea		= new QScrollArea;
-    mImageViewer->setBackgroundRole(QPalette::Base);
-    mImageViewer->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    mImageViewer->setScaledContents(true);
-    mScrollArea->setBackgroundRole(QPalette::Dark);
-    mScrollArea->setWidget(mImageViewer);
-    setCentralWidget(mScrollArea);
+	// setup render window
+	mRenderArea = new Canvas();
+	this->setCentralWidget(mRenderArea);
+	// connect UI actions to class slots
 	connect( ui.actionOpen, SIGNAL(triggered()),this,SLOT(loadImage()) );
 	connect( ui.actionSet_Kernel, SIGNAL(triggered()), kernelFormWidget, SLOT(show()) );
 	connect( kernelUi.increaseKernelSizeButton, SIGNAL(clicked()), this, SLOT(increaseKernelSize()) );
@@ -40,17 +38,15 @@ void ImageConvolution::loadImage()
 	QString fileName = QFileDialog::getOpenFileName(this,tr("Open Image"),"",tr("*.png *.jpg *.bmp"));
 	if(!fileName.isEmpty())
 	{
-		QImage mImageHandle(fileName);
-        if (mImageHandle.isNull()) {
+		QImage imageHandle(fileName);
+        if (imageHandle.isNull()) {
 			QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
             return;
         }
-		mImageWidth = mImageHandle.width();
-		mImageHeight= mImageHandle.height();
-		mImageViewer->setPixmap(QPixmap::fromImage(mImageHandle));
-		mImageViewer->adjustSize();
-		update();
-		QImage ARGB_Img = mImageHandle.convertToFormat(QImage::Format_ARGB32);
+		mImageWidth = imageHandle.width();
+		mImageHeight= imageHandle.height();
+		mRenderArea->updateImage(imageHandle);
+		QImage ARGB_Img = imageHandle.convertToFormat(QImage::Format_ARGB32);
 		mConvolver.setImageData(ARGB_Img.bits(),ARGB_Img.width(),ARGB_Img.height());
 	}
 }
@@ -130,9 +126,7 @@ void ImageConvolution::applyKernel()
 	if(mHaveKernel) {
 		mConvolver.cudaConvolve();
 		QImage output(mConvolver.getConvolvedImage(),mImageWidth,mImageHeight, QImage::Format_ARGB32);
-		mImageViewer->setPixmap(QPixmap::fromImage(output));
-		mImageViewer->adjustSize();
-		update();
+		mRenderArea->updateImage(output);
 	}else {
 		QMessageBox::information(this, tr("Image Viewer"), tr("Kernel not set"));
 	}
