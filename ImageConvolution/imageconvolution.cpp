@@ -50,7 +50,7 @@ void ImageConvolution::loadImage()
 		mImageViewer->setPixmap(QPixmap::fromImage(mImageHandle));
 		mImageViewer->adjustSize();
 		update();
-		QImage ARGB_Img( mImageHandle.bits(), mImageWidth, mImageHeight, QImage::Format_ARGB32);
+		QImage ARGB_Img = mImageHandle.convertToFormat(QImage::Format_ARGB32);
 		mConvolver.setImageData(ARGB_Img.bits(),ARGB_Img.width(),ARGB_Img.height());
 	}
 }

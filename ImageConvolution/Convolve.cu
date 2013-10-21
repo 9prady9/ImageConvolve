@@ -44,15 +44,15 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	if( gx >= fImageWidth || gy >= fImageHeight )
 		return;
 
-	int linearIdx	= gy*fImageWidth + gx;
+	int linearIdx	= 4*(gy*fImageWidth + gx);
 	int ridx		= linearIdx+2;
 	int gidx		= linearIdx+1;
 	int bidx		= linearIdx;
 	int aidx		= linearIdx+3;
-	fDestination[ridx] = 0; //fSource[ridx];
-	fDestination[gidx] = 0; //fSource[gidx];
-	fDestination[bidx] = gx; //fSource[bidx];
-	fDestination[aidx] = gy; //fSource[aidx];
+	fDestination[ridx] = fSource[ridx];
+	fDestination[gidx] = fSource[gidx];
+	fDestination[bidx] = fSource[bidx];
+	fDestination[aidx] = fSource[aidx];
 }
 
 Convolve::Convolve()
@@ -78,6 +78,8 @@ void Convolve::setKernelData(const Kernel &fKernel)
 void Convolve::setImageData(const uchar* fImageData, int fImageWidth, int fImageHeight)
 {	
 	free(host_ConvolvedImage);
+	cleanMemory();
+
 	mImageWidth		= fImageWidth;
 	mImageHeight	= fImageHeight;
 	/* Allocate memory on device to hold image data */
@@ -117,7 +119,7 @@ void Convolve::cudaConvolve()
 		/* Copy back convolved image to host and show it */		
 		HANDLE_ERROR( cudaMemcpy( host_ConvolvedImage, dev_ConvolvedImage, mImageWidth*mImageHeight*4*sizeof(uchar), cudaMemcpyDeviceToHost) );
 		QImage output(host_ConvolvedImage,mImageWidth,mImageHeight, QImage::Format_ARGB32);
-		output.save("C:\\Users\\prady\\Downloads\\output.png");
+		//output.save("C:\\Users\\prady\\Downloads\\output.png");
 	} else {
 		if(!mIsKernelSet)
 			printf("Prerequisite: Kernel not setup. \n");
@@ -178,5 +180,4 @@ void Convolve::destroyCUDA()
 {
 	HANDLE_ERROR( cudaEventDestroy(mStart) );
 	HANDLE_ERROR( cudaEventDestroy(mStop) );
-	cleanMemory();
 }
