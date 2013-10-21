@@ -54,30 +54,55 @@
    <property name="text">
     <string>Open</string>
    </property>
+   <property name="toolTip">
+    <string>Open Image</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit Application</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
    </property>
+   <property name="toolTip">
+    <string>Save Image</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionSet_Kernel">
    <property name="text">
     <string>Set Kernel</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Convolution Kernel</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
    </property>
   </action>
   <action name="actionApply_Kernel">
    <property name="text">
     <string>Apply Kernel</string>
    </property>
-  </action>
-  <action name="actionSend_Image_Data">
-   <property name="text">
-    <string>Pad Image</string>
+   <property name="toolTip">
+    <string>Apply Kernel to the loaded image</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>
