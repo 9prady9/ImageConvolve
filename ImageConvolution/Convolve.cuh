@@ -23,10 +23,10 @@ int ceil(int numer, int denom);
 struct Kernel
 {
 	int kr;
-	int* krValues;
+	float* krValues;
 	Kernel();
 	void setKernelRadius(int fKernelRadius);
-	void setCellValue(int fRow, int fCol, int fValue);
+	void setCellValue(int fRow, int fCol, float fValue);
 };
 
 __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImageHeight, uchar* fDestination, int fKernelSize);

@@ -3,7 +3,7 @@
 #include <qimage.h>
 #include <qdebug.h>
 
-__constant__	int	d_kernel[81];
+__constant__ float d_kernel[81];
 
 static int	mKernelSize;
 uchar*		dev_SourceImage;
@@ -25,10 +25,10 @@ void Kernel::setKernelRadius(int fKernelRadius)
 	if(krValues) free(krValues);
 	kr = fKernelRadius;
 	int temp = 2*fKernelRadius+1;
-	krValues = (int*)malloc(temp*temp*sizeof(int));
+	krValues = (float*)malloc(temp*temp*sizeof(float));
 }
 
-void Kernel::setCellValue(int fRow, int fCol, int fValue)
+void Kernel::setCellValue(int fRow, int fCol, float fValue)
 {
 	int temp = 2*kr+1;
 	krValues[fRow*temp+fCol] = fValue;
@@ -143,7 +143,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 		for( int ii=-fKernelSize; ii<=fKernelSize; ii++ )
 		{
 			int tmpidx	= 4*(jj*slen+ii);
-			int weight	= d_kernel[(fKernelSize+jj)*klen+(fKernelSize+ii)];
+			float weight= d_kernel[(fKernelSize+jj)*klen+(fKernelSize+ii)];
 			accum.x		+= weight*ptr[tmpidx+0];
 			accum.y		+= weight*ptr[tmpidx+1];
 			accum.z		+= weight*ptr[tmpidx+2];
@@ -169,7 +169,7 @@ Convolve::Convolve()
 void Convolve::setKernelData(const Kernel &fKernel)
 {
 	int temp			= fKernel.kr*2 + 1;
-	HANDLE_ERROR( cudaMemcpyToSymbol(d_kernel, fKernel.krValues, temp*temp*sizeof(int)) );
+	HANDLE_ERROR( cudaMemcpyToSymbol(d_kernel, fKernel.krValues, temp*temp*sizeof(float)) );
 	mKernelSize			= fKernel.kr;
 	mIsKernelSet		= true;
 }
