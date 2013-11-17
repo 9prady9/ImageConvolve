@@ -94,7 +94,7 @@ void ImageConvolution::saveKernel()
 				QString cellValue;
 				if(item) {
 					cellValue = item->text();
-					cellValue.toInt(&isConvSuccess);
+					cellValue.toFloat(&isConvSuccess);
 					if(!isConvSuccess) {
 						QMessageBox::information(this, tr("Image Viewer"), tr("Kernel value at (%1,%2) is not numeral").arg(i+1).arg(j+1));
 						return;
@@ -113,7 +113,7 @@ void ImageConvolution::saveKernel()
 				QTableWidgetItem* item = kernelUi.kernelTableWidget->item(i,j);
 				bool isConvSuccess = true;
 				QString cellValue = item->text();
-				mKernel.setCellValue(i,j,cellValue.toInt(&isConvSuccess));
+				mKernel.setCellValue(i,j,cellValue.toFloat(&isConvSuccess));
 			}
 		}
 		mConvolver.setKernelData(mKernel);
