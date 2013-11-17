@@ -57,7 +57,7 @@ __inline__ __device__ void setRGBA(uchar* fDestination,
 						const int fImageHeight,
 						const int row,
 						const int col,
-						uint4 value)
+						float4 value)
 {
 	int ii	= row<0 ? 0 : row;
 	int jj	= col>=fImageHeight ? fImageHeight-1 : col;
@@ -71,8 +71,9 @@ __inline__ __device__ void setRGBA(uchar* fDestination,
 __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImageHeight, uchar* fDestination, int fKernelSize)
 {
 	extern __shared__ uchar shared[];
+	const int PADDING = 2*fKernelSize;
 
-	int slen	= blockDim.x+2*fKernelSize;
+	int slen	= blockDim.x+PADDING;
 	int klen	= 2*fKernelSize+1;
 	int gx		= threadIdx.x + blockDim.x * blockIdx.x;
 	int gy		= threadIdx.y + blockDim.y * blockIdx.y;
@@ -93,7 +94,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	int gx2	= gx + blockDim.x;
 	int gy2	= gy + blockDim.y;
 
-	if( threadIdx.x < fKernelSize ) {
+	if( threadIdx.x < PADDING ) {
 		pxl	= getRGBA(fSource,fImageWidth,fImageHeight,
 						gx2-fKernelSize,gy-fKernelSize);
 		sidx= 4*(threadIdx.y*slen+lx2);
@@ -104,7 +105,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 		shared[sidx+3] = pxl.w;
 	}
 
-	if( threadIdx.y < fKernelSize ) {
+	if( threadIdx.y < PADDING ) {
 		pxl	= getRGBA(fSource,fImageWidth,fImageHeight,
 						gx-fKernelSize,gy2-fKernelSize);
 		sidx= 4*(ly2*slen+threadIdx.x);
@@ -115,7 +116,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 		shared[sidx+3] = pxl.w;
 	}
 
-	if( threadIdx.x < fKernelSize && threadIdx.y < fKernelSize ) {
+	if( threadIdx.x < PADDING && threadIdx.y < PADDING ) {
 		pxl	= getRGBA(fSource,fImageWidth,fImageHeight,
 						gx2-fKernelSize,gy2-fKernelSize);
 		sidx= 4*(ly2*slen+lx2);
@@ -134,9 +135,9 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	if( gx >= fImageWidth || gy >= fImageHeight )
 		return;
 		
-	sidx		= 4*(tj*slen+ti);
-	uchar* ptr	= shared + sidx;	
-	uint4 accum = {0,0,0,0};
+	sidx			= 4*(tj*slen+ti);
+	uchar* ptr		= shared + sidx;	
+	float4 accum	= {0.0f,0.0f,0.0f,0.0f};
 
 	for( int jj=-fKernelSize; jj<=fKernelSize; jj++ )
 	{
