@@ -24,14 +24,17 @@
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{429583cd-5b1f-4505-bdea-ce359fd7605a}</UniqueIdentifier>
+      <UniqueIdentifier>{9c5242a7-bf6f-451e-80e7-9b7c992df3f9}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{3e166838-1ca4-44bc-aa45-3594a206cf62}</UniqueIdentifier>
+      <UniqueIdentifier>{8af8d1a0-074e-4f49-8ff1-ea79df02f020}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Kernels Files">
+      <UniqueIdentifier>{242dec91-76e7-48a5-91be-28d01e8220d0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +62,9 @@
     <ClCompile Include="Canvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Convolve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="imageconvolution.h">
@@ -70,11 +76,11 @@
     <CustomBuild Include="imageconvolution.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="kernel.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="Canvas.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="kernel.ui">
+      <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -84,15 +90,16 @@
     <ClInclude Include="GeneratedFiles\ui_kernel.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Convolve.cuh">
+    <ClInclude Include="Convolve.h">
       <Filter>Header Files</Filter>
-    </None>
+    </ClInclude>
+    <ClInclude Include="conv.cuh">
+      <Filter>Kernels Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Convolve.cu">
-      <Filter>Source Files</Filter>
+    <CudaCompile Include="conv.cu">
+      <Filter>Kernels Files</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

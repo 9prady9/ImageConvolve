@@ -3,10 +3,10 @@
 
 #include "Canvas.h"
 #include "ui_kernel.h"
-#include "Convolve.cuh"
+#include "Convolve.h"
 #include "ui_imageconvolution.h"
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 
 const unsigned int KERNEL_MAX_SIZE = 4;
 const unsigned int KERNEL_MIN_SIZE = 1;
@@ -16,7 +16,7 @@ class ImageConvolution : public QMainWindow
 	Q_OBJECT
 
 public:
-	ImageConvolution(QWidget *parent = 0, Qt::WFlags flags = 0);
+	ImageConvolution(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	~ImageConvolution();
 
 public slots:

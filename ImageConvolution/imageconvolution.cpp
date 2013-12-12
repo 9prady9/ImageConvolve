@@ -5,7 +5,7 @@
 #include <qmessagebox.h>
 #include <qdebug.h>
 
-ImageConvolution::ImageConvolution(QWidget *parent, Qt::WFlags flags)
+ImageConvolution::ImageConvolution(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 {
 	ui.setupUi(this);
@@ -124,9 +124,10 @@ void ImageConvolution::saveKernel()
 void ImageConvolution::applyKernel()
 {
 	if(mHaveKernel) {
-		mConvolver.cudaConvolve();
+		float time = mConvolver.cudaConvolve();		
 		QImage output(mConvolver.getConvolvedImage(),mImageWidth,mImageHeight, QImage::Format_ARGB32);
 		mRenderArea->updateImage(output);
+		ui.statusBar->showMessage("Execition time "+QString::number(time)+" milli seconds");
 	}else {
 		QMessageBox::information(this, tr("Image Viewer"), tr("Kernel not set"));
 	}

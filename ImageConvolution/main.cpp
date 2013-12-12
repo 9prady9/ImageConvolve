@@ -1,5 +1,5 @@
 #include "imageconvolution.h"
-#include <QtGui/QApplication>
+#include <qapplication.h>
 
 int main(int argc, char *argv[])
 {
