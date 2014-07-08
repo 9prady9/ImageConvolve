@@ -1,4 +1,4 @@
-ImageConvolution application performs convolve operator on a given image.
+ImageConvolution application performs convolvution operator on a given image.
 
 Qt is used to design the front end of the application.
 
@@ -10,5 +10,4 @@ CUDA handles the convolution operation.
 	3) Click Convolve->Apply Kernel to convolve the input image with supplied kernel.
 	Once step 3 is carried out, the resultant convolved image will be shown.
 	
-    You should be able to see the run times of each image on the console window that opened along with the GUI window when
-    the application started.
+You should be able to see the run times of each image on the task bar of the application window.
