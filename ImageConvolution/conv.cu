@@ -126,85 +126,85 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 
 __global__ void convolveKernel(cudaTextureObject_t fSource, int fImageWidth, int fImageHeight, uchar* fDestination, int fKernelSize)
 {
-	//extern __shared__ uchar shared[];
-	//const int PADDING = 2*fKernelSize;
+	extern __shared__ uchar shared[];
+	const int PADDING = 2*fKernelSize;
 
-	//int slen	= blockDim.x+PADDING;
-	//int klen	= 2*fKernelSize+1;
-	//int gx		= threadIdx.x + blockDim.x * blockIdx.x;
-	//int gy		= threadIdx.y + blockDim.y * blockIdx.y;
-	//int sidx	= 4*(threadIdx.y*slen+threadIdx.x);
+	int slen	= blockDim.x + PADDING;
+	int klen	= PADDING + 1;
+	int gx		= threadIdx.x + blockDim.x * blockIdx.x;
+	int gy		= threadIdx.y + blockDim.y * blockIdx.y;
+	int sidx	= 4*(threadIdx.y*slen+threadIdx.x);
 
-	//uchar4 pxl	= tex2D<uchar4>(fSource,gx-fKernelSize,gy-fKernelSize);
+	uchar4 pxl	= tex2D<uchar4>(fSource,gx-fKernelSize,gy-fKernelSize);
 
-	//shared[sidx+0] = pxl.x;
-	//shared[sidx+1] = pxl.y;
-	//shared[sidx+2] = pxl.z;
-	//shared[sidx+3] = pxl.w;
+	shared[sidx+0] = pxl.x;
+	shared[sidx+1] = pxl.y;
+	shared[sidx+2] = pxl.z;
+	shared[sidx+3] = pxl.w;
 
-	//int ti	= threadIdx.x + fKernelSize;
-	//int tj	= threadIdx.y + fKernelSize;	
-	//int lx2	= threadIdx.x + blockDim.x;
-	//int ly2	= threadIdx.y + blockDim.y;
-	//int gx2	= gx + blockDim.x;
-	//int gy2	= gy + blockDim.y;
+	int ti	= threadIdx.x + fKernelSize;
+	int tj	= threadIdx.y + fKernelSize;	
+	int lx2	= threadIdx.x + blockDim.x;
+	int ly2	= threadIdx.y + blockDim.y;
+	int gx2	= gx + blockDim.x;
+	int gy2	= gy + blockDim.y;
 
-	//if( threadIdx.x < PADDING ) {
-	//	pxl	= tex2D<uchar4>(fSource,gx2-fKernelSize,gy-fKernelSize);
-	//	sidx= 4*(threadIdx.y*slen+lx2);
+	if( threadIdx.x < PADDING ) {
+		pxl	= tex2D<uchar4>(fSource,gx2-fKernelSize,gy-fKernelSize);
+		sidx= 4*(threadIdx.y*slen+lx2);
 
-	//	shared[sidx+0] = pxl.x;
-	//	shared[sidx+1] = pxl.y;
-	//	shared[sidx+2] = pxl.z;
-	//	shared[sidx+3] = pxl.w;
-	//}
+		shared[sidx+0] = pxl.x;
+		shared[sidx+1] = pxl.y;
+		shared[sidx+2] = pxl.z;
+		shared[sidx+3] = pxl.w;
+	}
 
-	//if( threadIdx.y < PADDING ) {
-	//	pxl	= tex2D<uchar4>(fSource,gx-fKernelSize,gy2-fKernelSize);
-	//	sidx= 4*(ly2*slen+threadIdx.x);
+	if( threadIdx.y < PADDING ) {
+		pxl	= tex2D<uchar4>(fSource,gx-fKernelSize,gy2-fKernelSize);
+		sidx= 4*(ly2*slen+threadIdx.x);
 
-	//	shared[sidx+0] = pxl.x;
-	//	shared[sidx+1] = pxl.y;
-	//	shared[sidx+2] = pxl.z;
-	//	shared[sidx+3] = pxl.w;
-	//}
+		shared[sidx+0] = pxl.x;
+		shared[sidx+1] = pxl.y;
+		shared[sidx+2] = pxl.z;
+		shared[sidx+3] = pxl.w;
+	}
 
-	//if( threadIdx.x < PADDING && threadIdx.y < PADDING ) {
-	//	pxl	= tex2D<uchar4>(fSource,gx2-fKernelSize,gy2-fKernelSize);
-	//	sidx= 4*(ly2*slen+lx2);
+	if( threadIdx.x < PADDING && threadIdx.y < PADDING ) {
+		pxl	= tex2D<uchar4>(fSource,gx2-fKernelSize,gy2-fKernelSize);
+		sidx= 4*(ly2*slen+lx2);
 
-	//	shared[sidx+0] = pxl.x;
-	//	shared[sidx+1] = pxl.y;
-	//	shared[sidx+2] = pxl.z;
-	//	shared[sidx+3] = pxl.w;
-	//}
+		shared[sidx+0] = pxl.x;
+		shared[sidx+1] = pxl.y;
+		shared[sidx+2] = pxl.z;
+		shared[sidx+3] = pxl.w;
+	}
 
-	//__syncthreads();
+	__syncthreads();
 
-	//// Now that the image has been read 
-	//// into shared memory completely.
-	//// Check for image bounds and exit
-	//if( gx >= fImageWidth || gy >= fImageHeight )
-	//	return;
-	//	
-	//sidx			= 4*(tj*slen+ti);
-	//uchar* ptr		= shared + sidx;	
-	//float4 accum	= {0.0f,0.0f,0.0f,0.0f};
+	// Now that the image has been read 
+	// into shared memory completely.
+	// Check for image bounds and exit
+	if( gx >= fImageWidth || gy >= fImageHeight )
+		return;
+		
+	sidx			= 4*(tj*slen+ti);
+	uchar* ptr		= shared + sidx;	
+	float4 accum	= {0.0f,0.0f,0.0f,0.0f};
 
-	//for( int jj=-fKernelSize; jj<=fKernelSize; jj++ )
-	//{
-	//	for( int ii=-fKernelSize; ii<=fKernelSize; ii++ )
-	//	{
-	//		int tmpidx	= 4*(jj*slen+ii);
-	//		float weight= d_kernel[(fKernelSize+jj)*klen+(fKernelSize+ii)];
-	//		accum.x		+= weight*ptr[tmpidx+0];
-	//		accum.y		+= weight*ptr[tmpidx+1];
-	//		accum.z		+= weight*ptr[tmpidx+2];
-	//	}
-	//}
-	//accum.w	= shared[sidx+3];
+	for( int jj=-fKernelSize; jj<=fKernelSize; jj++ )
+	{
+		for( int ii=-fKernelSize; ii<=fKernelSize; ii++ )
+		{
+			int tmpidx	= 4*(jj*slen+ii);
+			float weight= d_kernel[(fKernelSize+jj)*klen+(fKernelSize+ii)];
+			accum.x		+= weight*ptr[tmpidx+0];
+			accum.y		+= weight*ptr[tmpidx+1];
+			accum.z		+= weight*ptr[tmpidx+2];
+		}
+	}
+	accum.w	= shared[sidx+3];
 
-	//setRGBA(fDestination,fImageWidth,fImageHeight,gx,gy,accum);
+	setRGBA(fDestination,fImageWidth,fImageHeight,gx,gy,accum);
 }
 
 
@@ -283,13 +283,13 @@ void setImageOnDevice(const uchar * image_data, const int image_width, const int
 	handle->mImageHeight	= image_height;
 
 #if USE_CUDA_TEX_OBJECT
-
-	HANDLE_ERROR( cudaMallocArray(&cuImgArray, &channelDesc, fImageWidth, fImageHeight) );
-	HANDLE_ERROR( cudaMemcpyToArray(cuImgArray, 0,0, fImageData,
-							mImageWidth*mImageHeight*4*sizeof(uchar),
+	handle->channelDesc = cudaCreateChannelDesc<uchar4>();
+	HANDLE_ERROR( cudaMallocArray(&(handle->cuImgArray), &(handle->channelDesc), image_width, image_height) );
+	HANDLE_ERROR( cudaMemcpyToArray(handle->cuImgArray, 0,0, image_data,
+							image_width*image_height*4*sizeof(uchar),
 							cudaMemcpyHostToDevice) );
-	resDesc.res.array.array = cuImgArray;
-	cudaCreateTextureObject(&texObj,&resDesc,&texDesc,NULL);
+	handle->resDesc.res.array.array = handle->cuImgArray;
+	cudaCreateTextureObject(&(handle->texObj),&(handle->resDesc),&(handle->texDesc),NULL);
 
 #else
 	/* Allocate memory on device to hold image data */
@@ -333,7 +333,7 @@ void convolve(const int kernel_radius)
 #endif
 	
 #if USE_CUDA_TEX_OBJECT
-	convolveKernel<<<mGrid,mThreadsPerBlock,sharedMemSize>>>(texObj,
+	convolveKernel<<<mGrid,mThreadsPerBlock,sharedMemSize>>>(handle->texObj,
 															 image_width,
 															 image_height,
 															 handle->dev_ConvolvedImage,
@@ -344,8 +344,9 @@ void convolve(const int kernel_radius)
 															 handle->dev_ConvolvedImage,
 															 kernel_radius);
 #endif
-
+	
 	CHECK_CUDA_ERRORS();
+	cudaDeviceSynchronize();
 }
 
 void memCpyImageDeviceToHost(uchar* host_ptr)

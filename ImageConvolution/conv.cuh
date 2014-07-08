@@ -10,7 +10,7 @@ typedef unsigned int  uint;
 const int TILE_WIDTH = 32;
 const int TILE_HEIGHT = 32;
 
-#define USE_CUDA_TEX_OBJECT 0
+#define USE_CUDA_TEX_OBJECT 1
 
 static void HandleError( cudaError_t err, const char *file, int line )
 {
