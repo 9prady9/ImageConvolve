@@ -1,4 +1,6 @@
 #include <Canvas.h>
+#include <QFileDialog>
+#include <QMessageBox>
 
 Canvas::Canvas(QWidget* parent,Qt::WindowFlags flags)
 : QWidget(parent, flags)
@@ -24,5 +26,14 @@ void Canvas::paintEvent(QPaintEvent* fEvent)
 	QRect source(0, 0, mPaintImage.width(), mPaintImage.height());
 	lPainter.drawImage(target,mPaintImage,source);
 	lPainter.end();
+}
+
+void Canvas::saveImage()
+{
+	QString fileName = QFileDialog::getSaveFileName(this,tr("Save Image"),"",tr("*.png *.jpg *.bmp"));
+	if(!fileName.isEmpty())
+	{
+		mPaintImage.save(fileName);
+	}
 }
 	

@@ -27,8 +27,6 @@ public slots:
 	void applyKernel();
 
 private:
-	/* Helper Methods */
-	bool validateKernel();
 
 	/* Attributes */
 	Ui::ImageConvolutionClass ui;

@@ -12,6 +12,9 @@ public:
 	Canvas(QWidget * parent = 0, Qt::WindowFlags flags = 0);
 	~Canvas();
 	void updateImage(const QImage &);
+
+public slots:
+	void saveImage(void);
 	
 protected:
 	void paintEvent(QPaintEvent* fEvent);

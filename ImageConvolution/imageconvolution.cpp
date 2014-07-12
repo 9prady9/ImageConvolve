@@ -3,6 +3,7 @@
 #include <qfiledialog.h>
 #include <qpixmap.h>
 #include <qmessagebox.h>
+#include <QTableWidgetItem>
 #include <qdebug.h>
 
 ImageConvolution::ImageConvolution(QWidget *parent, Qt::WindowFlags flags)
@@ -29,6 +30,7 @@ ImageConvolution::ImageConvolution(QWidget *parent, Qt::WindowFlags flags)
 	connect( kernelUi.storeKernelButton, SIGNAL(clicked()), this, SLOT(saveKernel()) );
 	connect( kernelUi.storeKernelButton, SIGNAL(clicked()), kernelFormWidget, SLOT(hide()) );
 	connect( ui.actionApply_Kernel, SIGNAL(triggered()), this, SLOT(applyKernel()) );
+	connect( ui.actionSave, SIGNAL(triggered()), mRenderArea, SLOT(saveImage()) );
 }
 
 ImageConvolution::~ImageConvolution() { }
@@ -81,44 +83,41 @@ void ImageConvolution::decreaseKernelSize()
 
 void ImageConvolution::saveKernel()
 {
-	if(validateKernel())
+	/* The following double loop validates the kernel values */
+	int dim = 2*mKernelRadius+1;
+	for(int i=0; i<dim; ++i)
 	{
-		/* The following double loop validates the kernel values */
-		int dim = 2*mKernelRadius+1;
-		for(int i=0; i<dim; ++i)
+		for(int j=0; j<dim; ++j)
 		{
-			for(int j=0; j<dim; ++j)
-			{
-				QTableWidgetItem* item = kernelUi.kernelTableWidget->item(i,j);
-				bool isConvSuccess = true;
-				QString cellValue;
-				if(item) {
-					cellValue = item->text();
-					cellValue.toFloat(&isConvSuccess);
-					if(!isConvSuccess) {
-						QMessageBox::information(this, tr("Image Viewer"), tr("Kernel value at (%1,%2) is not numeral").arg(i+1).arg(j+1));
-						return;
-					}
-				} else {
-					QMessageBox::information(this, tr("Image Viewer"), tr("Kernel value at (%1,%2) not set").arg(i+1).arg(j+1));
+			QTableWidgetItem* item = kernelUi.kernelTableWidget->item(i,j);
+			bool isConvSuccess = true;
+			QString cellValue;
+			if(item) {
+				cellValue = item->text();
+				cellValue.toFloat(&isConvSuccess);
+				if(!isConvSuccess) {
+					QMessageBox::information(this, tr("Image Viewer"), tr("Kernel value at (%1,%2) is not numeral").arg(i+1).arg(j+1));
 					return;
 				}
+			} else {
+				QMessageBox::information(this, tr("Image Viewer"), tr("Kernel value at (%1,%2) not set").arg(i+1).arg(j+1));
+				return;
 			}
 		}
-		/* Now store the kernel into a buffer for CUDA computation */
-		for(int i=0; i<dim; ++i)
-		{
-			for(int j=0; j<dim; ++j)
-			{
-				QTableWidgetItem* item = kernelUi.kernelTableWidget->item(i,j);
-				bool isConvSuccess = true;
-				QString cellValue = item->text();
-				mKernel.setCellValue(i,j,cellValue.toFloat(&isConvSuccess));
-			}
-		}
-		mConvolver.setKernelData(mKernel);
-		mHaveKernel = true;
 	}
+	/* Now store the kernel into a buffer for CUDA computation */
+	for(int i=0; i<dim; ++i)
+	{
+		for(int j=0; j<dim; ++j)
+		{
+			QTableWidgetItem* item = kernelUi.kernelTableWidget->item(i,j);
+			bool isConvSuccess = true;
+			QString cellValue = item->text();
+			mKernel.setCellValue(i,j,cellValue.toFloat(&isConvSuccess));
+		}
+	}
+	mConvolver.setKernelData(mKernel);
+	mHaveKernel = true;
 }
 
 void ImageConvolution::applyKernel()
@@ -131,10 +130,5 @@ void ImageConvolution::applyKernel()
 	}else {
 		QMessageBox::information(this, tr("Image Viewer"), tr("Kernel not set"));
 	}
-}
-
-bool ImageConvolution::validateKernel()
-{
-	return true;
 }
 
