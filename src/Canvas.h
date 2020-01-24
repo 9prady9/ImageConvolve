@@ -15,7 +15,7 @@ public:
 
 public slots:
 	void saveImage(void);
-	
+
 protected:
 	void paintEvent(QPaintEvent* fEvent);
 

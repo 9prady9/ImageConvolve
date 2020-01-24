@@ -1,14 +1,15 @@
 #include "Convolve.h"
 
 #include "conv.cuh"
-#include <malloc.h>
 #include <qimage.h>
 #include <qdebug.h>
-#include <iostream>
+
 #include <chrono>
+#include <iostream>
+#include <stdlib.h>
 
 //std::chrono::time_point<std::chrono::system_clock>
-typedef std::chrono::time_point<std::chrono::system_clock> ChronoTimer;
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 Kernel::Kernel()
 {
@@ -36,7 +37,6 @@ Convolve::Convolve()
 	mIsImageSet			= false;
 	host_ConvolvedImage = 0;
 	initMemObject();
-	QueryPerformanceFrequency(&mFrequency);
 }
 
 void Convolve::setKernelData(const Kernel &fKernel)
@@ -48,14 +48,14 @@ void Convolve::setKernelData(const Kernel &fKernel)
 }
 
 void Convolve::setImageData(const uchar* fImageData, int fImageWidth, int fImageHeight)
-{	
+{
 	free(host_ConvolvedImage);
 
 	setImageOnDevice(fImageData, fImageWidth, fImageHeight);
 	mIsImageSet = true;
-	
+
 	mImageWidth		= fImageWidth;
-	mImageHeight	= fImageHeight;		
+	mImageHeight	= fImageHeight;
 	host_ConvolvedImage = (uchar*)malloc(mImageWidth*mImageHeight*4*sizeof(uchar));
 }
 
@@ -66,21 +66,21 @@ uchar* Convolve::getConvolvedImage()
 
 float Convolve::cudaConvolve()
 {
-	float time;
-	if(mIsKernelSet && mIsImageSet)
-	{
-		LARGE_INTEGER start, end;
-		
-		QueryPerformanceCounter(&start);
+	double time = 0.0;
+
+	if(mIsKernelSet && mIsImageSet) {
+        auto start = std::chrono::high_resolution_clock::now();
+
 		convolve(mKernelSize);
-		QueryPerformanceCounter(&end);
 
-		time = static_cast<double>(end.QuadPart- start.QuadPart) / mFrequency.QuadPart;
-		time *= 1000.0f;
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> diff = end-start;
 
-		std::cout<<"computation time on device: "<<time<<" ms\n";
+        time = diff.count();
 
-		/* Copy back convolved image to host and show it */		
+		std::cout<<"computation time on device: "<< time << std::endl;
+
+		/* Copy back convolved image to host and show it */
 		memCpyImageDeviceToHost(host_ConvolvedImage);
 		QImage output(host_ConvolvedImage,mImageWidth,mImageHeight, QImage::Format_ARGB32);
 	} else {
@@ -88,7 +88,7 @@ float Convolve::cudaConvolve()
 			printf("Prerequisite: Kernel not setup. \n");
 		if(!mIsImageSet)
 			printf("Prerequisite: Image not setup. \n");
-		time = 0.0f;
+		time = 0.0;
 	}
 	return time;
 }

@@ -20,7 +20,7 @@ void Canvas::updateImage(const QImage &fImage)
 }
 
 void Canvas::paintEvent(QPaintEvent* fEvent)
-{	
+{
 	QPainter lPainter(this);
 	QRect target(0, 0, this->width(), this->height());
 	QRect source(0, 0, mPaintImage.width(), mPaintImage.height());
@@ -30,10 +30,9 @@ void Canvas::paintEvent(QPaintEvent* fEvent)
 
 void Canvas::saveImage()
 {
-	QString fileName = QFileDialog::getSaveFileName(this,tr("Save Image"),"",tr("*.png *.jpg *.bmp"));
-	if(!fileName.isEmpty())
-	{
+	QString fileName = QFileDialog::getSaveFileName(
+            this,tr("Save Image"),"",tr("*.png *.jpg *.bmp"));
+	if(!fileName.isEmpty()) {
 		mPaintImage.save(fileName);
 	}
 }
-	

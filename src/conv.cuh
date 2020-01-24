@@ -12,31 +12,18 @@ const int TILE_HEIGHT = 32;
 
 #define USE_CUDA_TEX_OBJECT 1
 
-static void HandleError( cudaError_t err, const char *file, int line )
-{
-    if (err != cudaSuccess)
-	{
-        printf( "%s in %s at line %d\n", cudaGetErrorString( err ), file, line );
-		getchar();
-        exit( EXIT_FAILURE );
-    }
-}
+void HandleError( cudaError_t err, const char *file, int line );
+
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
-static void CheckError(void)
-{
-#ifdef _DEBUG_PRINTS_
-	cudaDeviceSynchronize();
-	HANDLE_ERROR( cudaPeekAtLastError() );
-#endif
-}
+void CheckError(void);
 
 #define CHECK_CUDA_ERRORS() (CheckError())
 
 int ceil(int numer, int denom);
 
 class MemObject {
-public:	
+public:
 	// Methods
 	MemObject();
 	void cleanMemory();

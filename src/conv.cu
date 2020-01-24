@@ -2,6 +2,25 @@
 
 #include <iostream>
 
+
+void HandleError( cudaError_t err, const char *file, int line )
+{
+    if (err != cudaSuccess)
+	{
+        printf( "%s in %s at line %d\n", cudaGetErrorString( err ), file, line );
+		getchar();
+        exit( EXIT_FAILURE );
+    }
+}
+
+void CheckError(void)
+{
+#ifdef _DEBUG_PRINTS_
+	cudaDeviceSynchronize();
+	HANDLE_ERROR( cudaPeekAtLastError() );
+#endif
+}
+
 __constant__ float d_kernel[81];
 
 __inline__ __device__ uchar4 getRGBA(const uchar* fSource,
@@ -49,7 +68,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	int sidx	= 4*(threadIdx.y*slen+threadIdx.x);
 
 	uchar4 pxl	= getRGBA(fSource,fImageWidth,fImageHeight,
-						gx-fKernelSize,gy-fKernelSize);	
+						gx-fKernelSize,gy-fKernelSize);
 
 	shared[sidx+0] = pxl.x;
 	shared[sidx+1] = pxl.y;
@@ -57,7 +76,7 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 	shared[sidx+3] = pxl.w;
 
 	int ti	= threadIdx.x + fKernelSize;
-	int tj	= threadIdx.y + fKernelSize;	
+	int tj	= threadIdx.y + fKernelSize;
 	int lx2	= threadIdx.x + blockDim.x;
 	int ly2	= threadIdx.y + blockDim.y;
 	int gx2	= gx + blockDim.x;
@@ -98,14 +117,14 @@ __global__ void convolveKernel(const uchar* fSource, int fImageWidth, int fImage
 
 	__syncthreads();
 
-	// Now that the image has been read 
+	// Now that the image has been read
 	// into shared memory completely.
 	// Check for image bounds and exit
 	if( gx >= fImageWidth || gy >= fImageHeight )
 		return;
-		
+
 	sidx			= 4*(tj*slen+ti);
-	uchar* ptr		= shared + sidx;	
+	uchar* ptr		= shared + sidx;
 	float4 accum	= {0.0f,0.0f,0.0f,0.0f};
 
 	for( int jj=-fKernelSize; jj<=fKernelSize; jj++ )
@@ -143,7 +162,7 @@ __global__ void convolveKernel(cudaTextureObject_t fSource, int fImageWidth, int
 	shared[sidx+3] = pxl.w;
 
 	int ti	= threadIdx.x + fKernelSize;
-	int tj	= threadIdx.y + fKernelSize;	
+	int tj	= threadIdx.y + fKernelSize;
 	int lx2	= threadIdx.x + blockDim.x;
 	int ly2	= threadIdx.y + blockDim.y;
 	int gx2	= gx + blockDim.x;
@@ -181,14 +200,14 @@ __global__ void convolveKernel(cudaTextureObject_t fSource, int fImageWidth, int
 
 	__syncthreads();
 
-	// Now that the image has been read 
+	// Now that the image has been read
 	// into shared memory completely.
 	// Check for image bounds and exit
 	if( gx >= fImageWidth || gy >= fImageHeight )
 		return;
-		
+
 	sidx			= 4*(tj*slen+ti);
-	uchar* ptr		= shared + sidx;	
+	uchar* ptr		= shared + sidx;
 	float4 accum	= {0.0f,0.0f,0.0f,0.0f};
 
 	for( int jj=-fKernelSize; jj<=fKernelSize; jj++ )
@@ -217,7 +236,8 @@ MemObject::MemObject()
 {
 	dev_SourceImage		= 0;
 	dev_ConvolvedImage	= 0;
-	
+    cuImgArray          = 0;
+
 	// CUDA texture specification
 	memset(&resDesc,0,sizeof(resDesc));
 	resDesc.resType = cudaResourceTypeArray;
@@ -228,23 +248,29 @@ MemObject::MemObject()
 	texDesc.filterMode		= cudaFilterModePoint;
 	texDesc.readMode		= cudaReadModeElementType;
 	texDesc.normalizedCoords= 0;
+
+    texObj = 0;
 }
 
 void MemObject::cleanMemory()
 {
 #if USE_CUDA_TEX_OBJECT
-
-	cudaDestroyTextureObject(texObj);
-	cudaFreeArray(cuImgArray);
-	texObj = 0;
-
+    if (texObj) {
+        cudaDestroyTextureObject(texObj);
+    }
+    if (cuImgArray) {
+        cudaFreeArray(cuImgArray);
+    }
+    cuImgArray = 0;
+	texObj     = 0;
 #else
-
-	cudaFree(dev_SourceImage);
-
+	if (dev_SourceImage) {
+        cudaFree(dev_SourceImage);
+    }
 #endif
-
-	cudaFree(dev_ConvolvedImage);
+    if (dev_ConvolvedImage) {
+        cudaFree(dev_ConvolvedImage);
+    }
 	dev_SourceImage		= 0;
 	dev_ConvolvedImage	= 0;
 }
@@ -298,13 +324,13 @@ void setImageOnDevice(const uchar * image_data, const int image_width, const int
 	CHECK_CUDA_ERRORS();
 
 	/* Copy this data to device memory for kernel computation */
-	HANDLE_ERROR( cudaMemcpy( handle->dev_SourceImage, image_data, 
+	HANDLE_ERROR( cudaMemcpy( handle->dev_SourceImage, image_data,
 							  image_width*image_height*4*sizeof(uchar),
-							  cudaMemcpyHostToDevice) );	
+							  cudaMemcpyHostToDevice) );
 	CHECK_CUDA_ERRORS();
 
 #endif
-	
+
 	/* Allocate memory for output image on GPU device memory */
 	HANDLE_ERROR( cudaMalloc((void**)&handle->dev_ConvolvedImage,
 							 image_width*image_height*4*sizeof(uchar)) );
@@ -319,7 +345,7 @@ void convolve(const int kernel_radius)
 	int image_width = handle->mImageWidth;
 	int image_height = handle->mImageHeight;
 
-	dim3	mGrid(ceil(image_width, mThreadsPerBlock.x), 
+	dim3	mGrid(ceil(image_width, mThreadsPerBlock.x),
 				  ceil(image_height, mThreadsPerBlock.y));
 
 	int sharedMemSize = (mThreadsPerBlock.y+2*kernel_radius)*
@@ -331,7 +357,7 @@ void convolve(const int kernel_radius)
 	std::cout<<"Blocks per grid "<<mGrid.x<<","<<mGrid.y<<std::endl;;
 	std::cout<<"Shared memory usage : "<<sharedMemSize<<" Bytes"<<std::endl;;
 #endif
-	
+
 #if USE_CUDA_TEX_OBJECT
 	convolveKernel<<<mGrid,mThreadsPerBlock,sharedMemSize>>>(handle->texObj,
 															 image_width,
@@ -344,7 +370,7 @@ void convolve(const int kernel_radius)
 															 handle->dev_ConvolvedImage,
 															 kernel_radius);
 #endif
-	
+
 	CHECK_CUDA_ERRORS();
 	cudaDeviceSynchronize();
 }
@@ -355,6 +381,6 @@ void memCpyImageDeviceToHost(uchar* host_ptr)
 	HANDLE_ERROR( cudaMemcpy(host_ptr, handle->dev_ConvolvedImage,
 							 handle->mImageWidth*handle->mImageHeight*4*sizeof(uchar),
 							 cudaMemcpyDeviceToHost) );
-	
+
 	CHECK_CUDA_ERRORS();
 }

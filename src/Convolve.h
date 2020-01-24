@@ -2,9 +2,8 @@
 #define __CONVOLVE_H__
 
 #include <stdio.h>
-#include <Windows.h>
 
-typedef unsigned char uchar;
+using uchar = unsigned char;
 
 struct Kernel
 {
@@ -30,7 +29,6 @@ public:
 
 private:
 	/* Attributes */
-	LARGE_INTEGER mFrequency;
 	bool	mIsKernelSet;
 	bool	mIsImageSet;
 	int		mImageWidth;
